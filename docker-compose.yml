@@ -1,0 +1,46 @@
+version: "3"
+services:
+  web_container:
+    container_name: php_web_container
+    build: ./php_web_container
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - ./php_web_container/src:/var/www/html
+    environment:
+      ENVIRONMENT: development
+    extra_hosts:
+      - "nishimu.com:127.0.0.1"
+    networks:
+      container_net:
+        ipv4_address: 172.16.238.6
+
+  selenium-hub:
+    image: selenium/hub:3.6.0-bromine
+    ports:
+      - "4444:4444"
+    networks:
+      container_net:
+        ipv4_address: 172.16.238.7
+
+  selenium-node-chrome-debug:
+    image: selenium/node-chrome-debug:3.6.0-bromine
+    ports:
+      - "0.0.0.0:32768:5900"
+    environment:
+      - HUB_PORT_4444_TCP_ADDR=172.16.238.7
+      - HUB_PORT_4444_TCP_PORT=4444
+    networks:
+      container_net:
+    extra_hosts:
+      - "nishimu.com:172.16.238.6"
+# Connect 'vnc://localhost:32768/', default pass to 'secret'.
+
+networks:
+  container_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.238.0/24
